@@ -38,14 +38,28 @@ INSTALLATION STEPS
    - Set up all required dependencies
    - Prepare the tool for use
 
-3. VERIFY INSTALLATION
+3. DOWNLOAD APCA-W3 LIBRARY
+
+This tool requires the APCA-W3 library to be present locally. Clone it as a subfolder inside your project directory:
+
+    git clone https://github.com/Myndex/apca-w3.git apca-w3
+
+After cloning, ensure the file apca-w3/src/apca-w3.js exists.
+
+If APCA-W3 has its own dependencies, install them:
+
+    cd apca-w3
+    npm install
+    cd ..
+
+4. VERIFY INSTALLATION
    Test that everything is working:
    
    node apca-wcag2-diff.mjs --help
 
    You should see the help menu with all available options.
 
-4. RUN YOUR FIRST TEST
+5. RUN YOUR FIRST TEST
    Try the tool with default settings:
    
    node apca-wcag2-diff.mjs
