@@ -77,6 +77,7 @@ const fgArg = process.argv.find(arg => arg.startsWith('--fg='));
 const bgArg = process.argv.find(arg => arg.startsWith('--bg='));
 const defaultFgArg = process.argv.find(arg => arg.startsWith('--default-fg='));
 const defaultBgArg = process.argv.find(arg => arg.startsWith('--default-bg='));
+const apcaThresholdArg = process.argv.find(arg => arg.startsWith('--apca-threshold='));
 const randomMode = process.argv.includes('--random');
 const csvOutput = process.argv.includes('--csv');
 const wcagFailsOnly = process.argv.includes('--wcag-fails');
@@ -87,6 +88,7 @@ const foregroundOverride = fgArg ? normalizeHex(fgArg.split('=')[1]) : null;
 const backgroundOverride = bgArg ? normalizeHex(bgArg.split('=')[1]) : null;
 const defaultForeground = defaultFgArg ? normalizeHex(defaultFgArg.split('=')[1]) : null;
 const defaultBackground = defaultBgArg ? normalizeHex(defaultBgArg.split('=')[1]) : '#000000';
+const apcaThreshold = apcaThresholdArg ? parseFloat(apcaThresholdArg.split('=')[1]) : 60;
 
 // Show usage if help is requested
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
@@ -98,6 +100,7 @@ Options:
   --bg=COLOR           Force background color (e.g., --bg=#ffffff)
   --default-fg=COLOR   Set default foreground color for random combinations
   --default-bg=COLOR   Set default background color (default: #000000)
+  --apca-threshold=NUM Set APCA Lc threshold (default: 60, normal text minimum)
   --random             Generate completely random fg/bg combinations
   --wcag-fails         Show only combinations where WCAG passes but APCA fails
   --apca-fails         Show only combinations where APCA passes but WCAG fails
@@ -105,10 +108,19 @@ Options:
   --debug              Show debug information about all tested combinations
   --help, -h           Show this help message
 
+APCA Threshold Guidelines:
+  15   - Large text (24px+ regular, 18.7px+ bold)
+  30   - Medium text (18px+ regular, 14px+ bold)  
+  45   - Small text (16px regular, 12px+ bold)
+  60   - Normal body text (default, 14-16px regular)
+  75   - Small body text (12-14px regular)
+  90   - Very small text (under 12px)
+
 Examples:
   node apca-wcag-diff.mjs                    # Random fg on black bg (all disagreements)
   node apca-wcag-diff.mjs --wcag-fails       # Show only WCAG pass + APCA fail cases
   node apca-wcag-diff.mjs --apca-fails       # Show only APCA pass + WCAG fail cases
+  node apca-wcag-diff.mjs --apca-threshold=45 # Use threshold for small text
   node apca-wcag-diff.mjs --csv              # Output as CSV file
   node apca-wcag-diff.mjs --random --csv     # Random combinations as CSV
 `);
@@ -117,7 +129,7 @@ Examples:
 
 const NUM_PAIRS = 1000;
 const THRESHOLD_WCAG = 4.5;
-const THRESHOLD_APCA = 75;
+// THRESHOLD_APCA is now configurable via --apca-threshold, defaults to 60
 
 // Store results for CSV output
 const results = [];
@@ -146,7 +158,7 @@ function testPair(fg, bg) {
   }
 
   const wcagPass = wcag >= THRESHOLD_WCAG;
-  const apcaPass = Math.abs(apca) >= THRESHOLD_APCA;
+  const apcaPass = Math.abs(apca) >= apcaThreshold;
 
   // Count statistics
   totalTested++;
@@ -186,8 +198,8 @@ function testPair(fg, bg) {
       
       console.log(`${fgColor}${bgColor}  ${fg} on ${bg}  ${reset} → WCAG: ${wcag.toFixed(2)} (${wcagPass ? 'PASS' : 'FAIL'}), APCA Lc: ${apca.toFixed(1)} (${apcaPass ? 'PASS' : 'FAIL'})`);
       console.log(`  Test links:`);
-      console.log(`    APCA: https://apcacontrast.com/?BG=${bgHex}&TXT=${fgHex}`);
-      console.log(`    Coolors: https://coolors.co/contrast-checker/${bgHex}-${fgHex}`);
+      console.log(`    https://apcacontrast.com/?BG=${bgHex}&TXT=${fgHex}`);
+      console.log(`    https://coolors.co/contrast-checker/${bgHex}-${fgHex}`);
       console.log('');
     }
   }
@@ -214,6 +226,8 @@ for (let i = 0; i < NUM_PAIRS; i++) {
 // Show statistics if debug mode
 if (debugMode) {
   console.error(`\nDEBUG STATISTICS (${totalTested} combinations tested):`);
+  console.error(`- WCAG threshold: ${THRESHOLD_WCAG}`);
+  console.error(`- APCA threshold: ${apcaThreshold}`);
   console.error(`- WCAG pass + APCA fail: ${wcagPassApcaFail}`);
   console.error(`- APCA pass + WCAG fail: ${apcaPassWcagFail}`);
   console.error(`- Both pass: ${bothPass}`);
