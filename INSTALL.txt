@@ -1,0 +1,192 @@
+INSTALLATION INSTRUCTIONS
+========================
+
+APCA vs WCAG 2.x Contrast Comparison Tool
+
+SYSTEM REQUIREMENTS
+------------------
+- Node.js version 18.12.1 or higher
+- npm (comes with Node.js)
+- Terminal/Command line access
+- Git (for cloning the repository)
+
+CHECKING YOUR NODE.JS VERSION
+----------------------------
+Before installation, verify you have a compatible Node.js version:
+
+    node --version
+
+If you see v18.12.1 or higher, you're ready to proceed.
+If not, download Node.js from: https://nodejs.org/
+
+INSTALLATION STEPS
+-----------------
+
+1. CLONE THE REPOSITORY
+   Open your terminal and run:
+   
+   git clone https://github.com/mgifford/apca-wcag2.git
+   cd apca-wcag2
+
+2. INSTALL DEPENDENCIES
+   The tool requires the APCA-W3 library. Install it with:
+   
+   npm install
+
+   This will:
+   - Download the APCA-W3 library
+   - Set up all required dependencies
+   - Prepare the tool for use
+
+3. VERIFY INSTALLATION
+   Test that everything is working:
+   
+   node apca-wcag2-diff.mjs --help
+
+   You should see the help menu with all available options.
+
+4. RUN YOUR FIRST TEST
+   Try the tool with default settings:
+   
+   node apca-wcag2-diff.mjs
+
+   This will generate random color combinations and show disagreements
+   between WCAG 2.x and APCA contrast calculations.
+
+TROUBLESHOOTING
+--------------
+
+PROBLEM: "Cannot use import statement outside a module"
+SOLUTION: Ensure you're using Node.js 18.12.1+ and that the file 
+         has a .mjs extension (ES Modules support)
+
+PROBLEM: "Module not found: apca-w3"
+SOLUTION: Run "npm install" in the project directory to install
+         dependencies
+
+PROBLEM: "Command not found: node"
+SOLUTION: Install Node.js from https://nodejs.org/ and restart
+         your terminal
+
+PROBLEM: "Permission denied"
+SOLUTION: On macOS/Linux, you may need to run:
+         chmod +x apca-wcag2-diff.mjs
+
+PROBLEM: Colors not displaying in terminal
+SOLUTION: Some terminals don't support ANSI colors. Use --csv
+         flag for plain text output:
+         node apca-wcag2-diff.mjs --csv
+
+QUICK START EXAMPLES
+-------------------
+
+After installation, try these commands:
+
+# Basic usage - find all disagreements
+node apca-wcag2-diff.mjs
+
+# Show only WCAG passes + APCA fails
+node apca-wcag2-diff.mjs --wcag-fails
+
+# Export results to CSV file
+node apca-wcag2-diff.mjs --csv > results.csv
+
+# Test with white background
+node apca-wcag2-diff.mjs --bg=fff
+
+# Test specific colors
+node apca-wcag2-diff.mjs --fg=333 --bg=fff
+
+# Get debug information
+node apca-wcag2-diff.mjs --debug
+
+# See all available options
+node apca-wcag2-diff.mjs --help
+
+DEVELOPMENT SETUP
+----------------
+
+If you plan to modify the tool:
+
+1. Fork the repository on GitHub
+2. Clone your fork:
+   git clone https://github.com/YOUR-USERNAME/apca-wcag2.git
+3. Install dependencies: npm install
+4. Make your changes
+5. Test thoroughly with various options
+6. Submit a pull request
+
+FILE STRUCTURE
+-------------
+apca-wcag2/
+├── apca-wcag2-diff.mjs    # Main script
+├── package.json           # Dependencies and metadata
+├── README.md             # Documentation
+├── INSTALL.txt           # This file
+└── apca-w3/              # APCA library (installed via npm)
+
+UPDATING
+--------
+
+To update to the latest version:
+
+1. Pull latest changes:
+   git pull origin main
+
+2. Update dependencies:
+   npm update
+
+3. Test the updated version:
+   node apca-wcag2-diff.mjs --help
+
+UNINSTALLING
+-----------
+
+To remove the tool:
+
+1. Delete the project directory:
+   rm -rf apca-wcag2
+
+2. Optionally, remove Node.js if you don't need it for other projects
+   (see Node.js documentation for your operating system)
+
+SUPPORT
+-------
+
+For issues and questions:
+- Check the README.md for detailed usage instructions
+- Review troubleshooting section above
+- Open an issue on GitHub: https://github.com/mgifford/apca-wcag2/issues
+
+PLATFORM-SPECIFIC NOTES
+-----------------------
+
+WINDOWS:
+- Use Command Prompt or PowerShell
+- Color display works best in Windows Terminal
+- Use backslashes for file paths if needed
+
+MACOS:
+- Terminal app works perfectly
+- Colors display correctly by default
+- Use forward slashes for file paths
+
+LINUX:
+- Most terminal emulators support colors
+- Bash, zsh, fish shells all work
+- Use forward slashes for file paths
+
+TESTING YOUR INSTALLATION
+-------------------------
+
+Run this comprehensive test to verify everything works:
+
+node apca-wcag2-diff.mjs --fg=666 --bg=fff --debug
+
+Expected output should show:
+- Color information for #666666 on #ffffff
+- WCAG and APCA scores
+- Debug statistics
+- No error messages
+
+If you see this output, your installation is successful!
