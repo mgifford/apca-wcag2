@@ -53,6 +53,69 @@ function randomHexColor() {
   return `#${[rand(), rand(), rand()].map(v => v.toString(16).padStart(2, '0')).join('')}`;
 }
 
+// Generate random color within a specific color range
+function randomColorInRange(range) {
+  if (!range) return randomHexColor();
+  
+  let r, g, b;
+  
+  switch (range) {
+    case 'red':
+      r = Math.floor(Math.random() * 256); // Full red range
+      g = Math.floor(Math.random() * 128); // Lower green
+      b = Math.floor(Math.random() * 128); // Lower blue
+      break;
+    case 'green':
+      r = Math.floor(Math.random() * 128); // Lower red
+      g = Math.floor(Math.random() * 256); // Full green range
+      b = Math.floor(Math.random() * 128); // Lower blue
+      break;
+    case 'blue':
+      r = Math.floor(Math.random() * 128); // Lower red
+      g = Math.floor(Math.random() * 128); // Lower green
+      b = Math.floor(Math.random() * 256); // Full blue range
+      break;
+    case 'orange':
+      r = Math.floor(200 + Math.random() * 56); // High red (200-255)
+      g = Math.floor(100 + Math.random() * 156); // Medium green (100-255)
+      b = Math.floor(Math.random() * 100); // Low blue (0-99)
+      break;
+    case 'purple':
+      r = Math.floor(128 + Math.random() * 128); // Medium-high red
+      g = Math.floor(Math.random() * 128); // Lower green
+      b = Math.floor(128 + Math.random() * 128); // Medium-high blue
+      break;
+    case 'yellow':
+      r = Math.floor(200 + Math.random() * 56); // High red
+      g = Math.floor(200 + Math.random() * 56); // High green
+      b = Math.floor(Math.random() * 100); // Low blue
+      break;
+    case 'cyan':
+      r = Math.floor(Math.random() * 128); // Lower red
+      g = Math.floor(128 + Math.random() * 128); // Medium-high green
+      b = Math.floor(128 + Math.random() * 128); // Medium-high blue
+      break;
+    case 'gray':
+      const grayValue = Math.floor(Math.random() * 256);
+      r = g = b = grayValue; // Equal RGB for pure gray
+      break;
+    case 'warm':
+      r = Math.floor(150 + Math.random() * 106); // Higher red
+      g = Math.floor(100 + Math.random() * 156); // Medium green
+      b = Math.floor(Math.random() * 150); // Lower blue
+      break;
+    case 'cool':
+      r = Math.floor(Math.random() * 150); // Lower red
+      g = Math.floor(100 + Math.random() * 156); // Medium green
+      b = Math.floor(150 + Math.random() * 106); // Higher blue
+      break;
+    default:
+      return randomHexColor();
+  }
+  
+  return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
 // Normalize hex color format
 function normalizeHex(hex) {
   if (!hex) return hex;
@@ -78,10 +141,13 @@ const bgArg = process.argv.find(arg => arg.startsWith('--bg='));
 const defaultFgArg = process.argv.find(arg => arg.startsWith('--default-fg='));
 const defaultBgArg = process.argv.find(arg => arg.startsWith('--default-bg='));
 const apcaThresholdArg = process.argv.find(arg => arg.startsWith('--apca-threshold='));
+const wcagThresholdArg = process.argv.find(arg => arg.startsWith('--wcag-threshold='));
+const colorRangeArg = process.argv.find(arg => arg.startsWith('--color-range='));
 const randomMode = process.argv.includes('--random');
 const csvOutput = process.argv.includes('--csv');
 const wcagFailsOnly = process.argv.includes('--wcag-fails');
 const apcaFailsOnly = process.argv.includes('--apca-fails');
+const bothPassOnly = process.argv.includes('--both-pass');
 const debugMode = process.argv.includes('--debug');
 
 const foregroundOverride = fgArg ? normalizeHex(fgArg.split('=')[1]) : null;
@@ -89,6 +155,8 @@ const backgroundOverride = bgArg ? normalizeHex(bgArg.split('=')[1]) : null;
 const defaultForeground = defaultFgArg ? normalizeHex(defaultFgArg.split('=')[1]) : null;
 const defaultBackground = defaultBgArg ? normalizeHex(defaultBgArg.split('=')[1]) : '#000000';
 const apcaThreshold = apcaThresholdArg ? parseFloat(apcaThresholdArg.split('=')[1]) : 60;
+const wcagThreshold = wcagThresholdArg ? parseFloat(wcagThresholdArg.split('=')[1]) : 4.5;
+const colorRange = colorRangeArg ? colorRangeArg.split('=')[1].toLowerCase() : null;
 
 // Show usage if help is requested
 if (process.argv.includes('--help') || process.argv.includes('-h')) {
@@ -101,12 +169,27 @@ Options:
   --default-fg=COLOR   Set default foreground color for random combinations
   --default-bg=COLOR   Set default background color (default: #000000)
   --apca-threshold=NUM Set APCA Lc threshold (default: 60, normal text minimum)
+  --wcag-threshold=NUM Set WCAG contrast threshold (default: 4.5, options: 3.0, 4.5, 7.0)
+  --color-range=RANGE  Generate colors within specific range (see Color Ranges below)
   --random             Generate completely random fg/bg combinations
   --wcag-fails         Show only combinations where WCAG passes but APCA fails
   --apca-fails         Show only combinations where APCA passes but WCAG fails
+  --both-pass          Show only combinations where both WCAG and APCA pass
   --csv                Output results in CSV format
   --debug              Show debug information about all tested combinations
   --help, -h           Show this help message
+
+Color Ranges:
+  red, green, blue     Primary color ranges
+  orange, purple       Secondary color ranges  
+  yellow, cyan         Bright color ranges
+  gray                 Grayscale colors
+  warm, cool           Temperature-based ranges
+
+WCAG Threshold Options:
+  3.0   - AA Large text minimum (18pt+ regular, 14pt+ bold)
+  4.5   - AA Normal text minimum (default)
+  7.0   - AAA contrast standard
 
 APCA Threshold Guidelines:
   15   - Large text (24px+ regular, 18.7px+ bold)
@@ -120,16 +203,18 @@ Examples:
   node apca-wcag-diff.mjs                    # Random fg on black bg (all disagreements)
   node apca-wcag-diff.mjs --wcag-fails       # Show only WCAG pass + APCA fail cases
   node apca-wcag-diff.mjs --apca-fails       # Show only APCA pass + WCAG fail cases
+  node apca-wcag-diff.mjs --both-pass        # Show only combinations where both pass
+  node apca-wcag-diff.mjs --color-range=green # Focus on green color combinations
+  node apca-wcag-diff.mjs --wcag-threshold=3.0 # Use AA Large text threshold
   node apca-wcag-diff.mjs --apca-threshold=45 # Use threshold for small text
+  node apca-wcag-diff.mjs --color-range=warm --both-pass # Warm colors that pass both
   node apca-wcag-diff.mjs --csv              # Output as CSV file
-  node apca-wcag-diff.mjs --random --csv     # Random combinations as CSV
 `);
   process.exit(0);
 }
 
 const NUM_PAIRS = 1000;
-const THRESHOLD_WCAG = 4.5;
-// THRESHOLD_APCA is now configurable via --apca-threshold, defaults to 60
+// THRESHOLD_WCAG and THRESHOLD_APCA are now configurable via CLI args
 
 // Store results for CSV output
 const results = [];
@@ -157,7 +242,7 @@ function testPair(fg, bg) {
     return;
   }
 
-  const wcagPass = wcag >= THRESHOLD_WCAG;
+  const wcagPass = wcag >= wcagThreshold;
   const apcaPass = Math.abs(apca) >= apcaThreshold;
 
   // Count statistics
@@ -176,11 +261,13 @@ function testPair(fg, bg) {
   const isDisagreement = wcagPass !== apcaPass;
   const isWcagFailsCase = wcagPass && !apcaPass; // WCAG passes, APCA fails
   const isApcaFailsCase = !wcagPass && apcaPass; // APCA passes, WCAG fails
+  const isBothPassCase = wcagPass && apcaPass; // Both pass
   
   let shouldShow = false;
   if (wcagFailsOnly && isWcagFailsCase) shouldShow = true;
   else if (apcaFailsOnly && isApcaFailsCase) shouldShow = true;
-  else if (!wcagFailsOnly && !apcaFailsOnly && isDisagreement) shouldShow = true;
+  else if (bothPassOnly && isBothPassCase) shouldShow = true;
+  else if (!wcagFailsOnly && !apcaFailsOnly && !bothPassOnly && isDisagreement) shouldShow = true;
 
   if (shouldShow) {
     // Remove # from hex codes for URLs
@@ -211,12 +298,12 @@ for (let i = 0; i < NUM_PAIRS; i++) {
   
   if (randomMode) {
     // Completely random foreground and background
-    fg = foregroundOverride || randomHexColor();
-    bg = backgroundOverride || randomHexColor();
+    fg = foregroundOverride || (colorRange ? randomColorInRange(colorRange) : randomHexColor());
+    bg = backgroundOverride || (colorRange ? randomColorInRange(colorRange) : randomHexColor());
   } else {
     // Use default behavior: random fg with default/specified bg, or vice versa
-    fg = foregroundOverride || defaultForeground || randomHexColor();
-    bg = backgroundOverride || (defaultForeground ? randomHexColor() : defaultBackground);
+    fg = foregroundOverride || defaultForeground || (colorRange ? randomColorInRange(colorRange) : randomHexColor());
+    bg = backgroundOverride || (defaultForeground ? (colorRange ? randomColorInRange(colorRange) : randomHexColor()) : defaultBackground);
   }
   
   if (fg.toLowerCase() === bg.toLowerCase()) continue;
@@ -226,8 +313,9 @@ for (let i = 0; i < NUM_PAIRS; i++) {
 // Show statistics if debug mode
 if (debugMode) {
   console.error(`\nDEBUG STATISTICS (${totalTested} combinations tested):`);
-  console.error(`- WCAG threshold: ${THRESHOLD_WCAG}`);
+  console.error(`- WCAG threshold: ${wcagThreshold}`);
   console.error(`- APCA threshold: ${apcaThreshold}`);
+  console.error(`- Color range: ${colorRange || 'all'}`);
   console.error(`- WCAG pass + APCA fail: ${wcagPassApcaFail}`);
   console.error(`- APCA pass + WCAG fail: ${apcaPassWcagFail}`);
   console.error(`- Both pass: ${bothPass}`);
