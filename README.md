@@ -1,235 +1,204 @@
-import { APCAcontrast, sRGBtoY } from './apca-w3/src/apca-w3.js';
+# APCA vs WCAG 2.x Contrast Comparison Tool
 
-// WCAG 2.x contrast ratio function
-function wcagContrast(fgHex, bgHex) {
-  const luminance = (hex) => {
-    // Normalize hex format first
-    let normalizedHex = hex;
-    if (!normalizedHex.startsWith('#')) {
-      normalizedHex = '#' + normalizedHex;
-    }
-    if (normalizedHex.length === 4) {
-      normalizedHex = '#' + normalizedHex[1] + normalizedHex[1] + normalizedHex[2] + normalizedHex[2] + normalizedHex[3] + normalizedHex[3];
-    }
-    
-    const [r, g, b] = [1, 3, 5].map(i => parseInt(normalizedHex.slice(i, i + 2), 16) / 255);
-    const toLinear = c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-    const [rl, gl, bl] = [r, g, b].map(toLinear);
-    return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
-  };
-  const L1 = luminance(fgHex);
-  const L2 = luminance(bgHex);
-  return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
-}
+A Node.js tool to compare contrast calculations between **WCAG 2.x** and **APCA (Accessible Perceptual Contrast Algorithm)** methodologies to identify disagreements between the two systems.
 
-// Parse color to the format expected by APCA
-function parseColor(hex) {
-  // Normalize hex format: ensure it starts with # and is 6 digits
-  let normalizedHex = hex;
-  
-  // Add # if missing
-  if (!normalizedHex.startsWith('#')) {
-    normalizedHex = '#' + normalizedHex;
-  }
-  
-  // Convert 3-digit hex to 6-digit hex (e.g., #fff -> #ffffff)
-  if (normalizedHex.length === 4) {
-    normalizedHex = '#' + normalizedHex[1] + normalizedHex[1] + normalizedHex[2] + normalizedHex[2] + normalizedHex[3] + normalizedHex[3];
-  }
-  
-  // Convert hex to RGBA array
-  const r = parseInt(normalizedHex.slice(1, 3), 16);
-  const g = parseInt(normalizedHex.slice(3, 5), 16);
-  const b = parseInt(normalizedHex.slice(5, 7), 16);
-  const rgba = [r, g, b, 1]; // APCA expects RGBA with alpha = 1
-  
-  // Convert to luminance using sRGBtoY
-  return sRGBtoY(rgba);
-}
+## Overview
 
-// Random hex color generator
-function randomHexColor() {
-  const rand = () => Math.floor(Math.random() * 256);
-  return `#${[rand(), rand(), rand()].map(v => v.toString(16).padStart(2, '0')).join('')}`;
-}
+This tool generates color combinations and compares how WCAG 2.x and APCA evaluate their contrast ratios. It's designed to help accessibility professionals understand the differences between these two contrast evaluation methods and identify edge cases where they disagree.
 
-// Normalize hex color format
-function normalizeHex(hex) {
-  if (!hex) return hex;
-  
-  let normalized = hex;
-  
-  // Add # if missing
-  if (!normalized.startsWith('#')) {
-    normalized = '#' + normalized;
-  }
-  
-  // Convert 3-digit hex to 6-digit hex (e.g., #fff -> #ffffff)
-  if (normalized.length === 4) {
-    normalized = '#' + normalized[1] + normalized[1] + normalized[2] + normalized[2] + normalized[3] + normalized[3];
-  }
-  
-  return normalized;
-}
+**Why this matters:** WCAG 3.0 is expected to include APCA as the new contrast algorithm, replacing the current WCAG 2.x contrast ratio calculations. Understanding where these systems disagree helps prepare for this transition.
 
-// CLI arguments
-const fgArg = process.argv.find(arg => arg.startsWith('--fg='));
-const bgArg = process.argv.find(arg => arg.startsWith('--bg='));
-const defaultFgArg = process.argv.find(arg => arg.startsWith('--default-fg='));
-const defaultBgArg = process.argv.find(arg => arg.startsWith('--default-bg='));
-const apcaThresholdArg = process.argv.find(arg => arg.startsWith('--apca-threshold='));
-const randomMode = process.argv.includes('--random');
-const csvOutput = process.argv.includes('--csv');
-const wcagFailsOnly = process.argv.includes('--wcag-fails');
-const apcaFailsOnly = process.argv.includes('--apca-fails');
-const debugMode = process.argv.includes('--debug');
+## Features
 
-const foregroundOverride = fgArg ? normalizeHex(fgArg.split('=')[1]) : null;
-const backgroundOverride = bgArg ? normalizeHex(bgArg.split('=')[1]) : null;
-const defaultForeground = defaultFgArg ? normalizeHex(defaultFgArg.split('=')[1]) : null;
-const defaultBackground = defaultBgArg ? normalizeHex(defaultBgArg.split('=')[1]) : '#000000';
-const apcaThreshold = apcaThresholdArg ? parseFloat(apcaThresholdArg.split('=')[1]) : 60;
+- 🎨 **Visual color preview** in terminal output
+- 🔗 **Direct links** to online contrast testing tools
+- 📊 **CSV export** for data analysis
+- 🎯 **Flexible filtering** (WCAG fails, APCA fails, or all disagreements)
+- 🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
+- 🔧 **Flexible color format support** (3-digit, 6-digit, with/without #)
+- 📈 **Debug statistics** for understanding result distributions
 
-// Show usage if help is requested
-if (process.argv.includes('--help') || process.argv.includes('-h')) {
-  console.log(`
-Usage: node apca-wcag-diff.mjs [options]
+## Quick Start
 
-Options:
-  --fg=COLOR           Force foreground color (e.g., --fg=#ff0000)
-  --bg=COLOR           Force background color (e.g., --bg=#ffffff)
+```bash
+# Clone the repository
+git clone https://github.com/mgifford/apca-wcag2.git
+cd apca-wcag2
+
+# Install dependencies
+npm install
+
+# Run with default settings (random foregrounds on black background)
+node apca-wcag2-diff.mjs
+
+# Show only cases where WCAG passes but APCA fails
+node apca-wcag2-diff.mjs --wcag-fails
+
+# Export results to CSV
+node apca-wcag2-diff.mjs --wcag-fails --csv > results.csv
+
+# Use white background instead of black
+node apca-wcag2-diff.mjs --bg=fff
+
+# Completely random color combinations
+node apca-wcag2-diff.mjs --random
+```
+
+## Command Line Options
+
+```
+Usage: node apca-wcag2-diff.mjs [options]
+
+Color Selection:
+  --fg=COLOR           Force foreground color (e.g., --fg=#ff0000 or --fg=f00)
+  --bg=COLOR           Force background color (e.g., --bg=#ffffff or --bg=fff)
   --default-fg=COLOR   Set default foreground color for random combinations
   --default-bg=COLOR   Set default background color (default: #000000)
-  --apca-threshold=NUM Set APCA Lc threshold (default: 60, normal text minimum)
   --random             Generate completely random fg/bg combinations
+
+Filtering:
   --wcag-fails         Show only combinations where WCAG passes but APCA fails
   --apca-fails         Show only combinations where APCA passes but WCAG fails
+  (no filter)          Show all disagreements between WCAG and APCA
+
+Output:
   --csv                Output results in CSV format
-  --debug              Show debug information about all tested combinations
-  --help, -h           Show this help message
+  --debug              Show debug information and statistics
+  --help, -h           Show help message
 
-APCA Threshold Guidelines:
-  15   - Large text (24px+ regular, 18.7px+ bold)
-  30   - Medium text (18px+ regular, 14px+ bold)  
-  45   - Small text (16px regular, 12px+ bold)
-  60   - Normal body text (default, 14-16px regular)
-  75   - Small body text (12-14px regular)
-  90   - Very small text (under 12px)
+Color Formats Supported:
+  #ffffff, ffffff, #fff, fff, #f0f0f0, f0f0f0
+```
 
-Examples:
-  node apca-wcag-diff.mjs                    # Random fg on black bg (all disagreements)
-  node apca-wcag-diff.mjs --wcag-fails       # Show only WCAG pass + APCA fail cases
-  node apca-wcag-diff.mjs --apca-fails       # Show only APCA pass + WCAG fail cases
-  node apca-wcag-diff.mjs --apca-threshold=45 # Use threshold for small text
-  node apca-wcag-diff.mjs --csv              # Output as CSV file
-  node apca-wcag-diff.mjs --random --csv     # Random combinations as CSV
-`);
-  process.exit(0);
-}
+## Examples
 
-const NUM_PAIRS = 1000;
-const THRESHOLD_WCAG = 4.5;
-// THRESHOLD_APCA is now configurable via --apca-threshold, defaults to 60
+### Basic Usage
 
-// Store results for CSV output
-const results = [];
-let totalTested = 0;
-let wcagPassApcaFail = 0;
-let apcaPassWcagFail = 0;
-let bothPass = 0;
-let bothFail = 0;
+```bash
+# Find disagreements with random colors on black background
+node apca-wcag2-diff.mjs
 
-// Output CSV header if needed
-if (csvOutput) {
-  console.log('Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,APCA_Link,Coolors_Link');
-}
+# Find disagreements with random colors on white background  
+node apca-wcag2-diff.mjs --bg=ffffff
 
-function testPair(fg, bg) {
-  const wcag = wcagContrast(fg, bg);
-  let apca;
+# Test specific color combination
+node apca-wcag2-diff.mjs --fg=666666 --bg=ffffff
+```
 
-  try {
-    const fgParsed = parseColor(fg);
-    const bgParsed = parseColor(bg);
-    apca = APCAcontrast(fgParsed, bgParsed);
-  } catch (err) {
-    console.error(`Error parsing colors: ${fg} on ${bg} — ${err.message}`);
-    return;
-  }
+### Filtering Results
 
-  const wcagPass = wcag >= THRESHOLD_WCAG;
-  const apcaPass = Math.abs(apca) >= apcaThreshold;
+```bash
+# Show only cases where WCAG 2.x passes but APCA fails
+node apca-wcag2-diff.mjs --wcag-fails
 
-  // Count statistics
-  totalTested++;
-  if (wcagPass && !apcaPass) wcagPassApcaFail++;
-  else if (!wcagPass && apcaPass) apcaPassWcagFail++;
-  else if (wcagPass && apcaPass) bothPass++;
-  else bothFail++;
+# Show only cases where APCA passes but WCAG 2.x fails (rare!)
+node apca-wcag2-diff.mjs --apca-fails --random
 
-  // Debug output
-  if (debugMode && totalTested <= 10) {
-    console.error(`DEBUG: ${fg} on ${bg} → WCAG: ${wcag.toFixed(2)} (${wcagPass ? 'PASS' : 'FAIL'}), APCA: ${apca.toFixed(1)} (${apcaPass ? 'PASS' : 'FAIL'})`);
-  }
+# Get debug statistics about result distribution
+node apca-wcag2-diff.mjs --debug
+```
 
-  // Check if this combination matches our filter criteria
-  const isDisagreement = wcagPass !== apcaPass;
-  const isWcagFailsCase = wcagPass && !apcaPass; // WCAG passes, APCA fails
-  const isApcaFailsCase = !wcagPass && apcaPass; // APCA passes, WCAG fails
-  
-  let shouldShow = false;
-  if (wcagFailsOnly && isWcagFailsCase) shouldShow = true;
-  else if (apcaFailsOnly && isApcaFailsCase) shouldShow = true;
-  else if (!wcagFailsOnly && !apcaFailsOnly && isDisagreement) shouldShow = true;
+### CSV Export
 
-  if (shouldShow) {
-    // Remove # from hex codes for URLs
-    const fgHex = fg.slice(1);
-    const bgHex = bg.slice(1);
-    
-    if (csvOutput) {
-      // CSV format
-      console.log(`${fg},${bg},${wcag.toFixed(2)},${wcagPass},${apca.toFixed(1)},${apcaPass},https://apcacontrast.com/?BG=${bgHex}&TXT=${fgHex},https://coolors.co/contrast-checker/${bgHex}-${fgHex}`);
-    } else {
-      // Terminal format with colors
-      const fgColor = `\x1b[38;2;${parseInt(fg.slice(1,3), 16)};${parseInt(fg.slice(3,5), 16)};${parseInt(fg.slice(5,7), 16)}m`;
-      const bgColor = `\x1b[48;2;${parseInt(bg.slice(1,3), 16)};${parseInt(bg.slice(3,5), 16)};${parseInt(bg.slice(5,7), 16)}m`;
-      const reset = '\x1b[0m';
-      
-      console.log(`${fgColor}${bgColor}  ${fg} on ${bg}  ${reset} → WCAG: ${wcag.toFixed(2)} (${wcagPass ? 'PASS' : 'FAIL'}), APCA Lc: ${apca.toFixed(1)} (${apcaPass ? 'PASS' : 'FAIL'})`);
-      console.log(`  Test links:`);
-      console.log(`    https://apcacontrast.com/?BG=${bgHex}&TXT=${fgHex}`);
-      console.log(`    https://coolors.co/contrast-checker/${bgHex}-${fgHex}`);
-      console.log('');
-    }
-  }
-}
+```bash
+# Export WCAG-fails cases to CSV
+node apca-wcag2-diff.mjs --wcag-fails --csv > wcag-fails.csv
 
-// Run comparisons
-for (let i = 0; i < NUM_PAIRS; i++) {
-  let fg, bg;
-  
-  if (randomMode) {
-    // Completely random foreground and background
-    fg = foregroundOverride || randomHexColor();
-    bg = backgroundOverride || randomHexColor();
-  } else {
-    // Use default behavior: random fg with default/specified bg, or vice versa
-    fg = foregroundOverride || defaultForeground || randomHexColor();
-    bg = backgroundOverride || (defaultForeground ? randomHexColor() : defaultBackground);
-  }
-  
-  if (fg.toLowerCase() === bg.toLowerCase()) continue;
-  testPair(fg, bg);
-}
+# Export random combinations to CSV
+node apca-wcag2-diff.mjs --random --csv > random-combinations.csv
 
-// Show statistics if debug mode
-if (debugMode) {
-  console.error(`\nDEBUG STATISTICS (${totalTested} combinations tested):`);
-  console.error(`- WCAG threshold: ${THRESHOLD_WCAG}`);
-  console.error(`- APCA threshold: ${apcaThreshold}`);
-  console.error(`- WCAG pass + APCA fail: ${wcagPassApcaFail}`);
-  console.error(`- APCA pass + WCAG fail: ${apcaPassWcagFail}`);
-  console.error(`- Both pass: ${bothPass}`);
-  console.error(`- Both fail: ${bothFail}`);
-}
+# Export with custom background
+node apca-wcag2-diff.mjs --bg=f5f5f5 --csv > light-gray-bg.csv
+```
+
+## Output Formats
+
+### Terminal Output
+Shows colored preview of each color combination plus contrast scores:
+
+```
+  #1cc285 on #000000   → WCAG: 9.10 (PASS), APCA Lc: -57.2 (FAIL)
+  Test links:
+    https://apcacontrast.com/?BG=000000&TXT=1cc285
+    https://coolors.co/contrast-checker/000000-1cc285
+```
+
+### CSV Output
+Structured data perfect for spreadsheet analysis:
+
+```csv
+Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,APCA_Link,Coolors_Link
+#b453f7,#000000,5.52,true,-36.9,false,https://apcacontrast.com/?BG=000000&TXT=b453f7,https://coolors.co/contrast-checker/000000-b453f7
+```
+
+## Understanding the Results
+
+### Thresholds Used
+- **WCAG 2.x**: Contrast ratio ≥ 4.5 (AA standard)
+- **APCA**: Lightness contrast (Lc) ≥ 75
+
+### Common Findings
+- **WCAG passes, APCA fails**: Common with certain color combinations, especially greens and cyans
+- **APCA passes, WCAG fails**: Very rare with random combinations
+- **Both fail**: Most random color combinations fail both systems
+- **Both pass**: High-contrast combinations typically pass both
+
+### Debug Statistics Example
+```
+DEBUG STATISTICS (1000 combinations tested):
+- WCAG pass + APCA fail: 90
+- APCA pass + WCAG fail: 0  
+- Both pass: 23
+- Both fail: 887
+```
+
+## Dependencies
+
+- **Node.js** 18.12.1+ (ES Modules support required)
+- **APCA-W3** library for APCA contrast calculations
+
+## Technical Details
+
+### Algorithms Used
+
+**WCAG 2.x Contrast Ratio:**
+- Uses relative luminance calculation based on sRGB color space
+- Formula: (L1 + 0.05) / (L2 + 0.05) where L1 > L2
+- Threshold: 4.5 for AA compliance
+
+**APCA (Accessible Perceptual Contrast Algorithm):**
+- Uses perceptual lightness contrast (Lc)
+- Accounts for spatial frequency, adaptation, and other visual factors
+- Threshold: 75 Lc for this tool's comparison
+
+### Color Processing
+- Supports multiple hex formats (3-digit, 6-digit, with/without #)
+- Automatic normalization to 6-digit hex format
+- sRGB color space processing for APCA compatibility
+
+## Contributing
+
+This tool is designed for accessibility research and education. Contributions welcome for:
+
+- Additional output formats
+- Different threshold testing
+- Performance optimizations
+- Extended color format support
+
+## Related Tools
+
+- [APCA Contrast Calculator](https://apcacontrast.com/) - Official APCA testing tool
+- [Coolors Contrast Checker](https://coolors.co/contrast-checker/) - Popular contrast testing tool
+- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) - WCAG 2.x contrast testing
+
+## License
+
+[Include your license here]
+
+## About APCA
+
+APCA is a new contrast algorithm being developed for WCAG 3.0 that aims to provide more accurate contrast predictions based on human vision research. Learn more:
+
+- [APCA Documentation](https://github.com/Myndex/SAPC-APCA)
+- [Why APCA](https://github.com/Myndex/SAPC-APCA/blob/master/documentation/WhyAPCA.md)
+- [WCAG 3.0 Working Draft](https://www.w3.org/TR/wcag-3.0/)
