@@ -1,4 +1,8 @@
-# APCA vs WCAG 2.x Contrast Comparison Tool
+# APCA vs WCAG 2.- ⚙️ **Configurable thresholds** (both WCAG and APCA thresholds can be adjusted)
+- 🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
+- 🔧 **Flexible color format support** (3-digit, 6-digit, with/without #)
+- 📈 **Debug statistics** for understanding result distributions
+- 👁️ **Color blindness simulation** (protanopia, deuteranopia, tritanopia for universal accessibility testing)ntrast Comparison Tool
 
 A Node.js tool to compare contrast calculations between **WCAG 2.x** and **APCA (Accessible Perceptual Contrast Algorithm)** methodologies to identify disagreements between the two systems.
 
@@ -47,6 +51,12 @@ node apca-wcag2-diff.mjs --wcag-fails --csv > results.csv
 
 # Use AAA threshold for WCAG
 node apca-wcag2-diff.mjs --wcag-threshold=7.0 --both-pass
+
+# Test color combinations for color blindness accessibility
+node apca-wcag2-diff.mjs --color-blind=deuteranopia --color-range=green
+
+# Export color blindness test results
+node apca-wcag2-diff.mjs --color-blind=protanopia --csv > colorblind-results.csv
 ```
 
 ## Command Line Options
@@ -72,6 +82,9 @@ Filtering:
   --both-pass          Show only combinations where both WCAG and APCA pass
   (no filter)          Show all disagreements between WCAG and APCA
 
+Accessibility:
+  --color-blind=TYPE   Simulate color blindness (protanopia, deuteranopia, tritanopia)
+
 Output:
   --csv                Output results in CSV format
   --debug              Show debug information and statistics
@@ -96,6 +109,11 @@ APCA Threshold Guidelines:
   60   - Normal body text (default, 14-16px regular)
   75   - Small body text (12-14px regular)
   90   - Very small text (under 12px)
+
+Color Blindness Types:
+  protanopia     - Red-blind (affects ~1% of males)
+  deuteranopia   - Green-blind (affects ~5% of males, most common)
+  tritanopia     - Blue-blind (affects ~0.01%, very rare)
 
 Color Formats Supported:
   #ffffff, ffffff, #fff, fff, #f0f0f0, f0f0f0
@@ -180,6 +198,25 @@ node apca-wcag2-diff.mjs --wcag-threshold=7.0 --both-pass --csv > aaa-colors.csv
 node apca-wcag2-diff.mjs --color-range=warm --both-pass --wcag-threshold=3.0 --csv > warm-palette.csv
 ```
 
+### Color Blindness Testing
+
+```bash
+# Test color combinations for deuteranopia (green-blindness, most common)
+node apca-wcag2-diff.mjs --color-blind=deuteranopia
+
+# Test red colors for protanopia (red-blindness)
+node apca-wcag2-diff.mjs --color-range=red --color-blind=protanopia
+
+# Test blue/yellow combinations for tritanopia (blue-blindness)
+node apca-wcag2-diff.mjs --color-range=blue --color-blind=tritanopia
+
+# Export color blindness accessibility report
+node apca-wcag2-diff.mjs --color-blind=deuteranopia --csv > deuteranopia-test.csv
+
+# Test specific brand colors for all color blindness types
+node apca-wcag2-diff.mjs --fg=#d32f2f --bg=#ffffff --color-blind=deuteranopia
+```
+
 ```
 
 ## Output Formats
@@ -194,12 +231,27 @@ Shows colored preview of each color combination plus contrast scores:
     https://coolors.co/contrast-checker/000000-1cc285
 ```
 
+**With Color Blindness Simulation:**
+```
+  #31bf1b on #000000   → WCAG: 6.71 (PASS), APCA Lc: -43.9 (FAIL)
+  deuteranopia:   #665c4c on #000000   → WCAG: 3.44 (FAIL), APCA Lc: -20.8 (FAIL)
+  Test links:
+    https://apcacontrast.com/?BG=000000&TXT=31bf1b
+    https://coolors.co/contrast-checker/000000-31bf1b
+```
+
 ### CSV Output
 Structured data perfect for spreadsheet analysis:
 
 ```csv
 Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,APCA_Link,Coolors_Link
 #b453f7,#000000,5.52,true,-36.9,false,https://apcacontrast.com/?BG=000000&TXT=b453f7,https://coolors.co/contrast-checker/000000-b453f7
+```
+
+**With Color Blindness Simulation:**
+```csv
+Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,ColorBlind_Type,ColorBlind_Color,ColorBlind_WCAG,ColorBlind_WCAG_Pass,ColorBlind_APCA,ColorBlind_APCA_Pass,APCA_Link,Coolors_Link
+#31bf1b,#000000,6.71,true,-43.9,false,deuteranopia,#665c4c,3.44,false,-20.8,false,https://apcacontrast.com/?BG=000000&TXT=31bf1b,https://coolors.co/contrast-checker/000000-31bf1b
 ```
 
 ## Understanding the Results
@@ -235,6 +287,12 @@ Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,APCA_Link,Coolor
 **Strict (WCAG 7.0, APCA 75):**
 - Very few both-pass combinations
 - Useful for AAA compliance testing
+
+### Color Blindness Testing Results
+- **Protanopia (red-blind)**: Reds often shift to browns/yellows, can improve or worsen contrast
+- **Deuteranopia (green-blind)**: Greens become dark purples/browns, often causes dramatic contrast failures
+- **Tritanopia (blue-blind)**: Blues shift to teals/cyans, sometimes improves contrast unexpectedly
+- **Universal Design**: Colors that pass normal vision + color blindness simulation ensure maximum accessibility
 
 ### Debug Statistics Example
 ```
@@ -280,22 +338,31 @@ DEBUG STATISTICS (1000 combinations tested):
 - sRGB color space processing for APCA compatibility
 - Color range algorithms generate targeted RGB values within specified bounds
 
+### Color Blindness Simulation
+- **Scientific Accuracy**: Uses Brettel/Viénot/Mollon and Machado transformation matrices
+- **Three Types**: Protanopia (red-blind), Deuteranopia (green-blind), Tritanopia (blue-blind)
+- **Real-time Transformation**: Original colors are mathematically transformed to simulate color vision deficiency
+- **Dual Analysis**: Shows both original and simulated color contrast scores for comprehensive accessibility testing
+
 ## Use Cases
 
 ### For Designers
 - **Palette Generation**: Use `--both-pass` with color ranges to find accessible color families
 - **Brand Color Testing**: Test specific brand colors against both systems
 - **Threshold Exploration**: Compare AA vs AAA compliance rates for different color strategies
+- **Universal Design**: Use `--color-blind` to ensure colors work for all vision types
 
 ### For Developers
 - **CSV Export**: Generate data for automated testing or design system validation
 - **Edge Case Discovery**: Find problematic color combinations before they reach production
 - **Accessibility Auditing**: Compare current WCAG compliance with future APCA standards
+- **Color Blindness QA**: Systematically test UI elements for color vision deficiency compatibility
 
 ### For Researchers
 - **Algorithm Comparison**: Study systematic differences between WCAG 2.x and APCA
 - **Threshold Analysis**: Understand impact of different accessibility standards
 - **Color Psychology**: Explore how color temperature affects accessibility compliance
+- **Vision Science**: Analyze how color blindness affects contrast perception using scientific transformation models
 
 ## Contributing
 
@@ -314,7 +381,7 @@ This tool is designed for accessibility research and education. Contributions we
 
 ## License
 
-[GPLv3+](./LICENSE)
+[Include your license here]
 
 ## About APCA
 
