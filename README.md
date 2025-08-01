@@ -13,8 +13,10 @@ This tool generates color combinations and compares how WCAG 2.x and APCA evalua
 - 🎨 **Visual color preview** in terminal output
 - 🔗 **Direct links** to online contrast testing tools
 - 📊 **CSV export** for data analysis
-- 🎯 **Flexible filtering** (WCAG fails, APCA fails, or all disagreements)
-- 🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
+- 🎯 **Advanced filtering** (WCAG fails, APCA fails, both pass, or all disagreements)
+- � **Color range targeting** (focus on specific color families like greens, warm colors, etc.)
+- ⚙️ **Configurable thresholds** (both WCAG and APCA thresholds can be adjusted)
+- �🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
 - 🔧 **Flexible color format support** (3-digit, 6-digit, with/without #)
 - 📈 **Debug statistics** for understanding result distributions
 
@@ -34,14 +36,17 @@ node apca-wcag2-diff.mjs
 # Show only cases where WCAG passes but APCA fails
 node apca-wcag2-diff.mjs --wcag-fails
 
+# Find color combinations that pass both systems
+node apca-wcag2-diff.mjs --both-pass
+
+# Focus on green color combinations
+node apca-wcag2-diff.mjs --color-range=green --both-pass
+
 # Export results to CSV
 node apca-wcag2-diff.mjs --wcag-fails --csv > results.csv
 
-# Use white background instead of black
-node apca-wcag2-diff.mjs --bg=fff
-
-# Completely random color combinations
-node apca-wcag2-diff.mjs --random
+# Use AAA threshold for WCAG
+node apca-wcag2-diff.mjs --wcag-threshold=7.0 --both-pass
 ```
 
 ## Command Line Options
@@ -54,17 +59,43 @@ Color Selection:
   --bg=COLOR           Force background color (e.g., --bg=#ffffff or --bg=fff)
   --default-fg=COLOR   Set default foreground color for random combinations
   --default-bg=COLOR   Set default background color (default: #000000)
+  --color-range=RANGE  Generate colors within specific range (see Color Ranges below)
   --random             Generate completely random fg/bg combinations
+
+Thresholds:
+  --wcag-threshold=NUM Set WCAG contrast threshold (default: 4.5, options: 3.0, 4.5, 7.0)
+  --apca-threshold=NUM Set APCA Lc threshold (default: 60, normal text minimum)
 
 Filtering:
   --wcag-fails         Show only combinations where WCAG passes but APCA fails
   --apca-fails         Show only combinations where APCA passes but WCAG fails
+  --both-pass          Show only combinations where both WCAG and APCA pass
   (no filter)          Show all disagreements between WCAG and APCA
 
 Output:
   --csv                Output results in CSV format
   --debug              Show debug information and statistics
   --help, -h           Show help message
+
+Color Ranges:
+  red, green, blue     Primary color ranges
+  orange, purple       Secondary color ranges  
+  yellow, cyan         Bright color ranges
+  gray                 Grayscale colors
+  warm, cool           Temperature-based ranges
+
+WCAG Threshold Options:
+  3.0   - AA Large text minimum (18pt+ regular, 14pt+ bold)
+  4.5   - AA Normal text minimum (default)
+  7.0   - AAA contrast standard
+
+APCA Threshold Guidelines:
+  15   - Large text (24px+ regular, 18.7px+ bold)
+  30   - Medium text (18px+ regular, 14px+ bold)  
+  45   - Small text (16px regular, 12px+ bold)
+  60   - Normal body text (default, 14-16px regular)
+  75   - Small body text (12-14px regular)
+  90   - Very small text (under 12px)
 
 Color Formats Supported:
   #ffffff, ffffff, #fff, fff, #f0f0f0, f0f0f0
@@ -85,30 +116,70 @@ node apca-wcag2-diff.mjs --bg=ffffff
 node apca-wcag2-diff.mjs --fg=666666 --bg=ffffff
 ```
 
-### Filtering Results
+### Color Range Targeting
+
+```bash
+# Focus on green color combinations
+node apca-wcag2-diff.mjs --color-range=green
+
+# Find accessible warm color combinations
+node apca-wcag2-diff.mjs --color-range=warm --both-pass
+
+# Test orange colors that pass both systems
+node apca-wcag2-diff.mjs --color-range=orange --both-pass --csv
+
+# Explore grayscale accessibility
+node apca-wcag2-diff.mjs --color-range=gray --wcag-threshold=3.0
+```
+
+### Threshold Customization
+
+```bash
+# Use AA Large text threshold (more permissive)
+node apca-wcag2-diff.mjs --wcag-threshold=3.0 --both-pass
+
+# Use AAA threshold (most strict)
+node apca-wcag2-diff.mjs --wcag-threshold=7.0 --both-pass
+
+# Adjust APCA threshold for small text
+node apca-wcag2-diff.mjs --apca-threshold=45 --wcag-fails
+
+# Compare different thresholds
+node apca-wcag2-diff.mjs --wcag-threshold=3.0 --apca-threshold=30 --debug
+```
+
+### Advanced Filtering
 
 ```bash
 # Show only cases where WCAG 2.x passes but APCA fails
 node apca-wcag2-diff.mjs --wcag-fails
 
-# Show only cases where APCA passes but WCAG 2.x fails (rare!)
+# Show only cases where APCA passes but WCAG 2.x fails
 node apca-wcag2-diff.mjs --apca-fails --random
 
-# Get debug statistics about result distribution
-node apca-wcag2-diff.mjs --debug
+# Find combinations that pass both systems
+node apca-wcag2-diff.mjs --both-pass
+
+# Debug statistics about result distribution
+node apca-wcag2-diff.mjs --debug --color-range=blue
 ```
 
-### CSV Export
+### CSV Export and Analysis
 
 ```bash
-# Export WCAG-fails cases to CSV
-node apca-wcag2-diff.mjs --wcag-fails --csv > wcag-fails.csv
+# Export accessible green combinations for designers
+node apca-wcag2-diff.mjs --color-range=green --both-pass --csv > accessible-greens.csv
 
-# Export random combinations to CSV
-node apca-wcag2-diff.mjs --random --csv > random-combinations.csv
+# Export WCAG-fails cases for analysis
+node apca-wcag2-diff.mjs --wcag-fails --csv > wcag-apca-disagreements.csv
 
-# Export with custom background
-node apca-wcag2-diff.mjs --bg=f5f5f5 --csv > light-gray-bg.csv
+# Export AAA-compliant color combinations
+node apca-wcag2-diff.mjs --wcag-threshold=7.0 --both-pass --csv > aaa-colors.csv
+
+# Generate warm color palette that passes both systems
+node apca-wcag2-diff.mjs --color-range=warm --both-pass --wcag-threshold=3.0 --csv > warm-palette.csv
+```
+
 ```
 
 ## Output Formats
@@ -133,23 +204,48 @@ Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,APCA_Link,Coolor
 
 ## Understanding the Results
 
-### Thresholds Used
-- **WCAG 2.x**: Contrast ratio ≥ 4.5 (AA standard)
-- **APCA**: Lightness contrast (Lc) ≥ 75
+### Default Thresholds
+- **WCAG 2.x**: Contrast ratio ≥ 4.5 (AA standard, configurable: 3.0, 4.5, 7.0)
+- **APCA**: Lightness contrast (Lc) ≥ 60 (normal text, configurable: 15-90)
 
-### Common Findings
-- **WCAG passes, APCA fails**: Common with certain color combinations, especially greens and cyans
-- **APCA passes, WCAG fails**: Very rare with random combinations
-- **Both fail**: Most random color combinations fail both systems
-- **Both pass**: High-contrast combinations typically pass both
+### Filter Results
+- **`--wcag-fails`**: Shows combinations where WCAG passes but APCA fails
+- **`--apca-fails`**: Shows combinations where APCA passes but WCAG fails  
+- **`--both-pass`**: Shows combinations that pass both systems (great for finding accessible colors)
+- **No filter**: Shows all disagreements between the two systems
+
+### Color Range Results
+- **Green/Cyan ranges**: Often show WCAG pass + APCA fail patterns
+- **Red/Orange ranges**: Good for finding both-pass combinations
+- **Gray range**: Useful for testing neutral palettes
+- **Warm/Cool ranges**: Temperature-based design exploration
+
+### Common Findings by Threshold
+**Standard (WCAG 4.5, APCA 60):**
+- WCAG passes, APCA fails: Common (especially greens)
+- APCA passes, WCAG fails: Rare
+- Both pass: High-contrast combinations
+- Both fail: Most random combinations
+
+**Relaxed (WCAG 3.0, APCA 30):**
+- More APCA pass + WCAG fail cases emerge
+- Useful for large text scenarios
+- Higher both-pass rates
+
+**Strict (WCAG 7.0, APCA 75):**
+- Very few both-pass combinations
+- Useful for AAA compliance testing
 
 ### Debug Statistics Example
 ```
 DEBUG STATISTICS (1000 combinations tested):
-- WCAG pass + APCA fail: 90
-- APCA pass + WCAG fail: 0  
-- Both pass: 23
-- Both fail: 887
+- WCAG threshold: 4.5
+- APCA threshold: 60
+- Color range: green
+- WCAG pass + APCA fail: 125
+- APCA pass + WCAG fail: 3
+- Both pass: 87
+- Both fail: 785
 ```
 
 ## Dependencies
@@ -164,17 +260,42 @@ DEBUG STATISTICS (1000 combinations tested):
 **WCAG 2.x Contrast Ratio:**
 - Uses relative luminance calculation based on sRGB color space
 - Formula: (L1 + 0.05) / (L2 + 0.05) where L1 > L2
-- Threshold: 4.5 for AA compliance
+- Configurable thresholds: 3.0 (AA Large), 4.5 (AA), 7.0 (AAA)
 
 **APCA (Accessible Perceptual Contrast Algorithm):**
 - Uses perceptual lightness contrast (Lc)
 - Accounts for spatial frequency, adaptation, and other visual factors
-- Threshold: 75 Lc for this tool's comparison
+- Configurable thresholds: 15-90 Lc based on text size and weight
+
+### Color Range Processing
+- **Primary colors**: Emphasize single color channels (pure reds, greens, blues)
+- **Secondary colors**: Combine two primary channels (orange, purple, yellow, cyan)
+- **Temperature ranges**: Warm (red/yellow bias) vs Cool (blue/cyan bias)
+- **Grayscale**: Equal RGB values for neutral testing
+- **Custom ranges**: Mathematically defined color boundaries for targeted testing
 
 ### Color Processing
 - Supports multiple hex formats (3-digit, 6-digit, with/without #)
 - Automatic normalization to 6-digit hex format
 - sRGB color space processing for APCA compatibility
+- Color range algorithms generate targeted RGB values within specified bounds
+
+## Use Cases
+
+### For Designers
+- **Palette Generation**: Use `--both-pass` with color ranges to find accessible color families
+- **Brand Color Testing**: Test specific brand colors against both systems
+- **Threshold Exploration**: Compare AA vs AAA compliance rates for different color strategies
+
+### For Developers
+- **CSV Export**: Generate data for automated testing or design system validation
+- **Edge Case Discovery**: Find problematic color combinations before they reach production
+- **Accessibility Auditing**: Compare current WCAG compliance with future APCA standards
+
+### For Researchers
+- **Algorithm Comparison**: Study systematic differences between WCAG 2.x and APCA
+- **Threshold Analysis**: Understand impact of different accessibility standards
+- **Color Psychology**: Explore how color temperature affects accessibility compliance
 
 ## Contributing
 
