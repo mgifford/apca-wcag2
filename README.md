@@ -314,7 +314,7 @@ This tool is designed for accessibility research and education. Contributions we
 
 ## License
 
-[Include your license here]
+[GPLv3+](./LICENSE)
 
 ## About APCA
 
