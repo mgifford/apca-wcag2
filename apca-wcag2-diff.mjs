@@ -376,8 +376,8 @@ function testPair(fg, bg) {
       }
       
       console.log(`  Test links:`);
-      console.log(`    https://apcacontrast.com/?BG=${bgHex}&TXT=${fgHex}`);
       console.log(`    https://coolors.co/contrast-checker/${bgHex}-${fgHex}`);
+      console.log(`    https://apcacontrast.com/?BG=${bgHex}&TXT=${fgHex}`);
       console.log('');
     }
   }
