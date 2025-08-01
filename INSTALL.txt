@@ -32,6 +32,8 @@ INSTALLATION STEPS
    The tool requires the APCA-W3 library. Install it with:
    
    npm install
+   npm install colorparsley
+
 
    This will:
    - Download the APCA-W3 library
