@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APCA & WCAG Contrast Calculator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Contrast Calculator</h1>
+    <p>Check both legacy WCAG 2.x and modern APCA scores.</p>
+
+    <div class="calculator-container">
+        <div id="preview">Sample Text</div>
+
+        <div class="input-group">
+            <label for="text-color">Text Color (Foreground)</label>
+            <input type="color" id="text-color" value="#000000">
+            <input type="text" id="text-color-hex" value="#000000" maxlength="7" pattern="^#([0-9a-fA-F]{3}){1,2}$">
+        </div>
+
+        <div class="input-group">
+            <label for="bg-color">Background Color</label>
+            <input type="color" id="bg-color" value="#ffffff">
+            <input type="text" id="bg-color-hex" value="#ffffff" maxlength="7" pattern="^#([0-9a-fA-F]{3}){1,2}$">
+        </div>
+
+        <button id="swap-button">🔄 Swap Colors</button>
+
+        <hr>
+
+        <div class="results-container">
+            <h2>WCAG 2.x Contrast Ratio (Legacy)</h2>
+            <div id="wcag-result" class="result-box">
+                <span id="wcag-score">21.0:1</span>
+                <span id="wcag-pass" class="wcag-status">AAA Pass</span>
+            </div>
+            <p class="guideline">AA minimum: 4.5:1 (Normal), 3.0:1 (Large Text)</p>
+        </div>
+
+        <div class="results-container">
+            <h2>APCA Score (Modern)</h2>
+            <div id="apca-result" class="result-box">
+                <span id="apca-score">Lc 106.0</span>
+                <span id="apca-pass" class="apca-status">Super</span>
+            </div>
+            <p class="guideline">Minimum Lc values depend on text size and weight. A common minimum for body text is Lc 60-75.</p>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
