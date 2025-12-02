@@ -165,6 +165,13 @@ h1, h2 {
     color: #0056b3;
 }
 
+footer {
+display: flex;
+justify-content: center;
+align-items: center;
+background-color: #333;
+color: white;
+}
 
 /* Bluesky Links */
 /* Container card */
