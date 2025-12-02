@@ -3,85 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APCA & WCAG Contrast Calculator</title>
+    <title>Contrast Disagreement Explorer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Contrast Calculator</h1>
+    <h1>Contrast Calculator & Explorer</h1>
+    
+    <div class="controls-container">
+        
+        <div class="config-bar">
+            <div class="lock-group">
+                <input type="checkbox" id="lock-fg" title="Lock Foreground Color">
+                <label for="fixed-fg"><strong>Lock Foreground:</strong></label>
+                <input type="color" id="fixed-fg" value="#000000">
+            </div>
+            <div class="lock-group">
+                <input type="checkbox" id="lock-bg" title="Lock Background Color">
+                <label for="fixed-bg"><strong>Lock Background:</strong></label>
+                <input type="color" id="fixed-bg" value="#ffffff">
+            </div>
+        </div>
 
-    <section class="explorer">
-        <h2>Explore Differences (25 combos)</h2>
-        <div class="controls-grid">
-            <div class="control">
-                <label for="filter-mode">Filter</label>
-                <select id="filter-mode">
-                    <option value="wcag-pass-apca-fail">WCAG passes, APCA fails</option>
-                    <option value="apca-pass-wcag-fail">APCA passes, WCAG fails</option>
-                    <option value="both-pass">Both pass</option>
-                    <option value="disagree">All disagreements</option>
+        <hr>
+
+        <h2>Explore Differences (<span id="combo-count">0</span> combos)</h2>
+        
+        <div class="control-grid">
+            
+            <div class="control-col">
+                <h3>1. Filter Disagreements</h3>
+                <p class="hint">Force generator to find specific edge cases.</p>
+                <select id="disagreement-filter">
+                    <option value="all">Show Random (No Filter)</option>
+                    <option value="wcag_pass_apca_fail">WCAG passes, APCA fails</option>
+                    <option value="apca_pass_wcag_fail">APCA passes, WCAG fails</option>
+                    <option value="both_pass">Both Pass</option>
+                    <option value="all_disagreements">Any Disagreement</option>
                 </select>
             </div>
-            <div class="control">
-                <label for="color-range">Color Range</label>
-                <select id="color-range">
+            
+            <div class="control-col">
+                <h3>2. Color Range</h3>
+                <select id="color-range-filter">
                     <option value="any">Any</option>
+                    <option value="red">Red</option>
                     <option value="green">Green</option>
                     <option value="blue">Blue</option>
-                    <option value="red">Red</option>
+                    <option value="yellow">Yellow</option>
                     <option value="orange">Orange</option>
                     <option value="purple">Purple</option>
-                    <option value="yellow">Yellow</option>
                     <option value="cyan">Cyan</option>
                     <option value="gray">Gray</option>
-                    <option value="warm">Warm</option>
-                    <option value="cool">Cool</option>
                 </select>
             </div>
-            <div class="control">
-                <label for="wcag-threshold">WCAG Threshold</label>
+
+            <div class="control-col">
+                <h3>WCAG Threshold</h3>
                 <select id="wcag-threshold">
                     <option value="4.5">AA (4.5)</option>
                     <option value="3.0">AA Large (3.0)</option>
                     <option value="7.0">AAA (7.0)</option>
                 </select>
             </div>
-            <div class="control">
-                <label for="apca-threshold">APCA Threshold (Lc)</label>
+            
+            <div class="control-col">
+                <h3>APCA Threshold (Lc)</h3>
                 <select id="apca-threshold">
                     <option value="60">Body (60)</option>
                     <option value="75">Small body (75)</option>
-                    <option value="45">Small/Large text (45)</option>
+                    <option value="45">Small/Large (45)</option>
                     <option value="30">Medium (30)</option>
                     <option value="15">Large (15)</option>
                 </select>
             </div>
-            <div class="control">
-                <label for="color-blind">Color Blindness</label>
-                <select id="color-blind">
-                    <option value="none">None</option>
-                    <option value="protanopia">Protanopia</option>
-                    <option value="deuteranopia">Deuteranopia</option>
-                    <option value="tritanopia">Tritanopia</option>
-                </select>
-            </div>
-            <div class="control">
-                <label for="bg-default">Default Background</label>
-                <input type="text" id="bg-default" value="#000000" maxlength="7" pattern="^#([0-9a-fA-F]{3}){1,2}$">
-            </div>
-            <div class="control">
-                <label for="randomize">Randomize</label>
-                <input type="checkbox" id="randomize" checked>
-            </div>
-            <div class="control">
-                <button id="generate-button">Generate 25</button>
-            </div>
         </div>
 
-        <div id="results-grid" class="results-grid" aria-live="polite"></div>
-    </section>
+        <div class="action-bar">
+            <button id="generate-button" class="primary-btn">Generate 25 Matching Pairs</button>
+            <span id="status-msg"></span>
+        </div>
+    </div>
+    
+    <div id="results-container">
+        </div>
 
-    <!-- Official APCA library for accurate Lc values -->
-    <script src="https://unpkg.com/apca-w3@0.1.9/dist/apca-w3.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
