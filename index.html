@@ -8,47 +8,80 @@
 </head>
 <body>
     <h1>Contrast Calculator</h1>
-    <p>Check both legacy WCAG 2.x and modern APCA scores.</p>
 
-    <div class="calculator-container">
-        <div id="preview">Sample Text</div>
-
-        <div class="input-group">
-            <label for="text-color">Text Color (Foreground)</label>
-            <input type="color" id="text-color" value="#000000">
-            <input type="text" id="text-color-hex" value="#000000" maxlength="7" pattern="^#([0-9a-fA-F]{3}){1,2}$">
-        </div>
-
-        <div class="input-group">
-            <label for="bg-color">Background Color</label>
-            <input type="color" id="bg-color" value="#ffffff">
-            <input type="text" id="bg-color-hex" value="#ffffff" maxlength="7" pattern="^#([0-9a-fA-F]{3}){1,2}$">
-        </div>
-
-        <button id="swap-button">🔄 Swap Colors</button>
-
-        <hr>
-
-        <div class="results-container">
-            <h2>WCAG 2.x Contrast Ratio (Legacy)</h2>
-            <div id="wcag-result" class="result-box">
-                <span id="wcag-score">21.0:1</span>
-                <span id="wcag-pass" class="wcag-status">AAA Pass</span>
+    <section class="explorer">
+        <h2>Explore Differences (25 combos)</h2>
+        <div class="controls-grid">
+            <div class="control">
+                <label for="filter-mode">Filter</label>
+                <select id="filter-mode">
+                    <option value="wcag-pass-apca-fail">WCAG passes, APCA fails</option>
+                    <option value="apca-pass-wcag-fail">APCA passes, WCAG fails</option>
+                    <option value="both-pass">Both pass</option>
+                    <option value="disagree">All disagreements</option>
+                </select>
             </div>
-            <p class="guideline">AA minimum: 4.5:1 (Normal), 3.0:1 (Large Text)</p>
-        </div>
-
-        <div class="results-container">
-            <h2>APCA Score (Modern)</h2>
-            <div id="apca-result" class="result-box">
-                <span id="apca-score">Lc 106.0</span>
-                <span id="apca-pass" class="apca-status">Super</span>
+            <div class="control">
+                <label for="color-range">Color Range</label>
+                <select id="color-range">
+                    <option value="any">Any</option>
+                    <option value="green">Green</option>
+                    <option value="blue">Blue</option>
+                    <option value="red">Red</option>
+                    <option value="orange">Orange</option>
+                    <option value="purple">Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="gray">Gray</option>
+                    <option value="warm">Warm</option>
+                    <option value="cool">Cool</option>
+                </select>
             </div>
-            <p class="guideline">Minimum Lc values depend on text size and weight. A common minimum for body text is Lc 60-75.</p>
+            <div class="control">
+                <label for="wcag-threshold">WCAG Threshold</label>
+                <select id="wcag-threshold">
+                    <option value="4.5">AA (4.5)</option>
+                    <option value="3.0">AA Large (3.0)</option>
+                    <option value="7.0">AAA (7.0)</option>
+                </select>
+            </div>
+            <div class="control">
+                <label for="apca-threshold">APCA Threshold (Lc)</label>
+                <select id="apca-threshold">
+                    <option value="60">Body (60)</option>
+                    <option value="75">Small body (75)</option>
+                    <option value="45">Small/Large text (45)</option>
+                    <option value="30">Medium (30)</option>
+                    <option value="15">Large (15)</option>
+                </select>
+            </div>
+            <div class="control">
+                <label for="color-blind">Color Blindness</label>
+                <select id="color-blind">
+                    <option value="none">None</option>
+                    <option value="protanopia">Protanopia</option>
+                    <option value="deuteranopia">Deuteranopia</option>
+                    <option value="tritanopia">Tritanopia</option>
+                </select>
+            </div>
+            <div class="control">
+                <label for="bg-default">Default Background</label>
+                <input type="text" id="bg-default" value="#000000" maxlength="7" pattern="^#([0-9a-fA-F]{3}){1,2}$">
+            </div>
+            <div class="control">
+                <label for="randomize">Randomize</label>
+                <input type="checkbox" id="randomize" checked>
+            </div>
+            <div class="control">
+                <button id="generate-button">Generate 25</button>
+            </div>
         </div>
 
-    </div>
+        <div id="results-grid" class="results-grid" aria-live="polite"></div>
+    </section>
 
+    <!-- Official APCA library for accurate Lc values -->
+    <script src="https://unpkg.com/apca-w3@0.1.9/dist/apca-w3.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
