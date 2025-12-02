@@ -189,6 +189,29 @@ h1, h2 {
       outline-offset: 2px;
     }
 
+/* Center the whole Bluesky likes section */
+.post__likes {
+  text-align: center;
+  margin-inline: auto;
+}
+
+/* Center the CTA link nicely */
+.post__likesCta {
+  display: inline-block;
+  margin-inline: auto;
+}
+
+/* Center the avatar list (and remove default UL indentation) */
+.post__likesList {
+  list-style: none;
+  padding: 0;
+  margin: 1rem auto 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
 /* Bluesky Links */
 /* Container card */
 .post__likes {
