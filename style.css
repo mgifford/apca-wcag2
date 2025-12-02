@@ -165,11 +165,29 @@ h1, h2 {
     color: #0056b3;
 }
 
-footer {
-display: flex;
-justify-content: center;
-align-items: center;
-}
+    .site-footer {
+      margin-top: 2rem;
+      padding: 1rem 0;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--card-bg);
+      text-align: center;
+    }
+
+    .site-footer p {
+      margin: 0;
+      color: var(--text-muted-on-light);
+      font-size: 0.95rem;
+    }
+
+    .site-footer a {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    .site-footer a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
 
 /* Bluesky Links */
 /* Container card */
@@ -226,4 +244,8 @@ align-items: center;
   /* also theme-aware */
   border: 2px solid color-mix(in srgb, currentColor 40%, transparent);
   display: block;
+}
+
+.social-media-links {
+    text-align: center;
 }
