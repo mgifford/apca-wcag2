@@ -378,6 +378,7 @@ This tool is designed for accessibility research and education. Contributions we
 - [APCA Contrast Calculator](https://apcacontrast.com/) - Official APCA testing tool
 - [Coolors Contrast Checker](https://coolors.co/contrast-checker/) - Popular contrast testing tool
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) - WCAG 2.x contrast testing
+- [Mydex Bridge](https://github.com/Myndex/bridge-pca)
 
 ## License
 
