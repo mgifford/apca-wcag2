@@ -391,3 +391,9 @@ APCA is a new contrast algorithm being developed for WCAG 3.0 that aims to provi
 - [APCA Documentation](https://github.com/Myndex/SAPC-APCA)
 - [Why APCA](https://github.com/Myndex/SAPC-APCA/blob/master/documentation/WhyAPCA.md)
 - [WCAG 3.0 Working Draft](https://www.w3.org/TR/wcag-3.0/)
+
+## AI Disclosure
+
+Yes. AI was used in creating this tool. There be dragons! 
+
+
