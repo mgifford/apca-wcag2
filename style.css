@@ -5,6 +5,20 @@ body {
     color: #333;
 }
 
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.logo-mark {
+    width: 80px;
+    height: auto;
+    flex-shrink: 0;
+}
+
 h1, h2 {
     text-align: center;
     color: #2c3e50;

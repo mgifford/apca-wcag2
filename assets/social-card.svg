@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">APCA vs WCAG Contrast Explorer</title>
+  <desc id="desc">Social sharing card for the Accessibility Contrast Disagreement Explorer comparing APCA and WCAG results.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#a78bfa" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" rx="28" />
+  <rect x="48" y="48" width="1104" height="534" rx="24" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" />
+  <g fill="none" stroke="rgba(255,255,255,0.14)" stroke-width="2">
+    <path d="M160 160 L1040 160" />
+    <path d="M160 250 L1040 250" />
+  </g>
+  <text x="160" y="210" fill="#e2e8f0" font-family="'Helvetica Neue', Arial, sans-serif" font-size="72" font-weight="700">APCA vs WCAG</text>
+  <text x="160" y="270" fill="#cbd5e1" font-family="'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="600">Contrast Disagreement Explorer</text>
+  <text x="160" y="340" fill="#cbd5e1" font-family="'Helvetica Neue', Arial, sans-serif" font-size="26" font-weight="500">Generate color pairs, filter disagreements, and compare thresholds side-by-side.</text>
+  <rect x="160" y="380" width="360" height="70" rx="14" fill="url(#accent)" />
+  <text x="180" y="428" fill="#0b1224" font-family="'Helvetica Neue', Arial, sans-serif" font-size="30" font-weight="700">Try the live explorer</text>
+  <text x="160" y="500" fill="#94a3b8" font-family="'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="600">mgifford.github.io/apca-wcag2/</text>
+</svg>
