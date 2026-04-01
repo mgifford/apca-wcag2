@@ -35,8 +35,9 @@ h1, h2 {
 
 .config-bar {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 40px;
+    gap: 20px;
     margin-bottom: 20px;
 }
 
@@ -48,6 +49,8 @@ h1, h2 {
     padding: 10px 20px;
     border-radius: 30px;
     border: 1px solid #ddd;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .hint {
@@ -285,4 +288,19 @@ h1, h2 {
 
 .social-media-links {
     text-align: center;
+}
+
+@media (max-width: 600px) {
+    .controls-container {
+        padding: 15px;
+    }
+
+    .config-bar {
+        gap: 10px;
+    }
+
+    .lock-group {
+        width: 100%;
+        justify-content: flex-start;
+    }
 }
