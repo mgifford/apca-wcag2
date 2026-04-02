@@ -1,181 +1,24 @@
 import { APCAcontrast, sRGBtoY } from './apca-w3/src/apca-w3.js';
-
-// WCAG 2.x contrast ratio function
-function wcagContrast(fgHex, bgHex) {
-  const luminance = (hex) => {
-    // Normalize hex format first
-    let normalizedHex = hex;
-    if (!normalizedHex.startsWith('#')) {
-      normalizedHex = '#' + normalizedHex;
-    }
-    if (normalizedHex.length === 4) {
-      normalizedHex = '#' + normalizedHex[1] + normalizedHex[1] + normalizedHex[2] + normalizedHex[2] + normalizedHex[3] + normalizedHex[3];
-    }
-    
-    const [r, g, b] = [1, 3, 5].map(i => parseInt(normalizedHex.slice(i, i + 2), 16) / 255);
-    const toLinear = c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-    const [rl, gl, bl] = [r, g, b].map(toLinear);
-    return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
-  };
-  const L1 = luminance(fgHex);
-  const L2 = luminance(bgHex);
-  return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
-}
+import {
+  normalizeHex,
+  wcagContrast,
+  simulateColorBlindness,
+  randomColorInRange,
+  getRandomHexColor as randomHexColor,
+} from './lib/contrast-utils.mjs';
 
 // Parse color to the format expected by APCA
 function parseColor(hex) {
-  // Normalize hex format: ensure it starts with # and is 6 digits
-  let normalizedHex = hex;
-  
-  // Add # if missing
-  if (!normalizedHex.startsWith('#')) {
-    normalizedHex = '#' + normalizedHex;
-  }
-  
-  // Convert 3-digit hex to 6-digit hex (e.g., #fff -> #ffffff)
-  if (normalizedHex.length === 4) {
-    normalizedHex = '#' + normalizedHex[1] + normalizedHex[1] + normalizedHex[2] + normalizedHex[2] + normalizedHex[3] + normalizedHex[3];
-  }
-  
+  const normalizedHex = normalizeHex(hex);
+
   // Convert hex to RGBA array
   const r = parseInt(normalizedHex.slice(1, 3), 16);
   const g = parseInt(normalizedHex.slice(3, 5), 16);
   const b = parseInt(normalizedHex.slice(5, 7), 16);
   const rgba = [r, g, b, 1]; // APCA expects RGBA with alpha = 1
-  
+
   // Convert to luminance using sRGBtoY
   return sRGBtoY(rgba);
-}
-
-// Random hex color generator
-function randomHexColor() {
-  const rand = () => Math.floor(Math.random() * 256);
-  return `#${[rand(), rand(), rand()].map(v => v.toString(16).padStart(2, '0')).join('')}`;
-}
-
-// Generate random color within a specific color range
-function randomColorInRange(range) {
-  if (!range) return randomHexColor();
-  
-  let r, g, b;
-  
-  switch (range) {
-    case 'red':
-      r = Math.floor(Math.random() * 256); // Full red range
-      g = Math.floor(Math.random() * 128); // Lower green
-      b = Math.floor(Math.random() * 128); // Lower blue
-      break;
-    case 'green':
-      r = Math.floor(Math.random() * 128); // Lower red
-      g = Math.floor(Math.random() * 256); // Full green range
-      b = Math.floor(Math.random() * 128); // Lower blue
-      break;
-    case 'blue':
-      r = Math.floor(Math.random() * 128); // Lower red
-      g = Math.floor(Math.random() * 128); // Lower green
-      b = Math.floor(Math.random() * 256); // Full blue range
-      break;
-    case 'orange':
-      r = Math.floor(200 + Math.random() * 56); // High red (200-255)
-      g = Math.floor(100 + Math.random() * 156); // Medium green (100-255)
-      b = Math.floor(Math.random() * 100); // Low blue (0-99)
-      break;
-    case 'purple':
-      r = Math.floor(128 + Math.random() * 128); // Medium-high red
-      g = Math.floor(Math.random() * 128); // Lower green
-      b = Math.floor(128 + Math.random() * 128); // Medium-high blue
-      break;
-    case 'yellow':
-      r = Math.floor(200 + Math.random() * 56); // High red
-      g = Math.floor(200 + Math.random() * 56); // High green
-      b = Math.floor(Math.random() * 100); // Low blue
-      break;
-    case 'cyan':
-      r = Math.floor(Math.random() * 128); // Lower red
-      g = Math.floor(128 + Math.random() * 128); // Medium-high green
-      b = Math.floor(128 + Math.random() * 128); // Medium-high blue
-      break;
-    case 'gray':
-      const grayValue = Math.floor(Math.random() * 256);
-      r = g = b = grayValue; // Equal RGB for pure gray
-      break;
-    case 'warm':
-      r = Math.floor(150 + Math.random() * 106); // Higher red
-      g = Math.floor(100 + Math.random() * 156); // Medium green
-      b = Math.floor(Math.random() * 150); // Lower blue
-      break;
-    case 'cool':
-      r = Math.floor(Math.random() * 150); // Lower red
-      g = Math.floor(100 + Math.random() * 156); // Medium green
-      b = Math.floor(150 + Math.random() * 106); // Higher blue
-      break;
-    default:
-      return randomHexColor();
-  }
-  
-  return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
-}
-
-// Normalize hex color format
-function normalizeHex(hex) {
-  if (!hex) return hex;
-  
-  let normalized = hex;
-  
-  // Add # if missing
-  if (!normalized.startsWith('#')) {
-    normalized = '#' + normalized;
-  }
-  
-  // Convert 3-digit hex to 6-digit hex (e.g., #fff -> #ffffff)
-  if (normalized.length === 4) {
-    normalized = '#' + normalized[1] + normalized[1] + normalized[2] + normalized[2] + normalized[3] + normalized[3];
-  }
-  
-  return normalized;
-}
-
-// Color blindness simulation matrices
-// Based on Brettel, Viénot and Mollon JOSA 14/10 1997
-// and Machado, Oliveira and Fernandes IEEE CG&A 29/4 2009
-const colorBlindMatrices = {
-  protanopia: [
-    [0.567, 0.433, 0.000],
-    [0.558, 0.442, 0.000], 
-    [0.000, 0.242, 0.758]
-  ],
-  deuteranopia: [
-    [0.625, 0.375, 0.000],
-    [0.700, 0.300, 0.000],
-    [0.000, 0.300, 0.700]
-  ],
-  tritanopia: [
-    [0.950, 0.050, 0.000],
-    [0.000, 0.433, 0.567],
-    [0.000, 0.475, 0.525]
-  ]
-};
-
-// Simulate color blindness for a given hex color
-function simulateColorBlindness(hex, type) {
-  if (!type || !colorBlindMatrices[type]) return hex;
-  
-  // Convert hex to RGB
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  
-  const matrix = colorBlindMatrices[type];
-  
-  // Apply transformation matrix
-  const newR = matrix[0][0] * r + matrix[0][1] * g + matrix[0][2] * b;
-  const newG = matrix[1][0] * r + matrix[1][1] * g + matrix[1][2] * b;
-  const newB = matrix[2][0] * r + matrix[2][1] * g + matrix[2][2] * b;
-  
-  // Convert back to hex
-  const toHex = (val) => Math.round(Math.max(0, Math.min(255, val * 255))).toString(16).padStart(2, '0');
-  
-  return `#${toHex(newR)}${toHex(newG)}${toHex(newB)}`;
 }
 
 // CLI arguments
