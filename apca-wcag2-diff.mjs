@@ -85,13 +85,11 @@ WCAG Threshold Options:
   4.5   - AA Normal text minimum (default)
   7.0   - AAA contrast standard
 
-APCA Threshold Guidelines:
-  15   - Large text (24px+ regular, 18.7px+ bold)
-  30   - Medium text (18px+ regular, 14px+ bold)  
-  45   - Small text (16px regular, 12px+ bold)
-  60   - Normal body text (default, 14-16px regular)
-  75   - Small body text (12-14px regular)
-  90   - Very small text (under 12px)
+APCA Threshold Guidelines "Basic Mode" (Showing fluent text only):
+  45   - Large text only (32px)
+  60   - Medium text, default (20px; ~ WCAG 4.5:1)
+  75   - Small text (16px)
+  90   - Smallest text (14px)
 
 Examples:
   node apca-wcag-diff.mjs                    # Random fg on black bg (all disagreements)

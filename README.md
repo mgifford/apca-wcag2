@@ -1,8 +1,4 @@
-# APCA vs WCAG 2.- ⚙️ **Configurable thresholds** (both WCAG and APCA thresholds can be adjusted)
-- 🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
-- 🔧 **Flexible color format support** (3-digit, 6-digit, with/without #)
-- 📈 **Debug statistics** for understanding result distributions
-- 👁️ **Color blindness simulation** (protanopia, deuteranopia, tritanopia for universal accessibility testing)ntrast Comparison Tool
+# APCA vs WCAG 2.x Contrast Comparison Tool
 
 A Node.js tool to compare contrast calculations between **WCAG 2.x** and **APCA (Accessible Perceptual Contrast Algorithm)** methodologies to identify disagreements between the two systems.
 
@@ -18,11 +14,12 @@ This tool generates color combinations and compares how WCAG 2.x and APCA evalua
 - 🔗 **Direct links** to online contrast testing tools
 - 📊 **CSV export** for data analysis
 - 🎯 **Advanced filtering** (WCAG fails, APCA fails, both pass, or all disagreements)
-- � **Color range targeting** (focus on specific color families like greens, warm colors, etc.)
+- 🎨 **Color range targeting** (focus on specific color families like greens, warm colors, etc.)
 - ⚙️ **Configurable thresholds** (both WCAG and APCA thresholds can be adjusted)
-- �🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
+- 🎲 **Multiple color selection modes** (random, fixed backgrounds, custom defaults)
 - 🔧 **Flexible color format support** (3-digit, 6-digit, with/without #)
 - 📈 **Debug statistics** for understanding result distributions
+- 👁️ **Color blindness simulation** (protanopia, deuteranopia, tritanopia for universal accessibility testing)
 
 ## Quick Start
 
@@ -102,13 +99,11 @@ WCAG Threshold Options:
   4.5   - AA Normal text minimum (default)
   7.0   - AAA contrast standard
 
-APCA Threshold Guidelines:
-  15   - Large text (24px+ regular, 18.7px+ bold)
-  30   - Medium text (18px+ regular, 14px+ bold)  
-  45   - Small text (16px regular, 12px+ bold)
-  60   - Normal body text (default, 14-16px regular)
-  75   - Small body text (12-14px regular)
-  90   - Very small text (under 12px)
+APCA Threshold Guidelines "Basic Mode" (Showing fluent text only):
+  45   - Large text only (32px)
+  60   - Medium text, default (20px; ~ WCAG 4.5:1)
+  75   - Small text (16px)
+  90   - Smallest text (14px)
 
 Color Blindness Types:
   protanopia     - Red-blind (affects ~1% of males)
@@ -163,7 +158,7 @@ node apca-wcag2-diff.mjs --wcag-threshold=7.0 --both-pass
 node apca-wcag2-diff.mjs --apca-threshold=45 --wcag-fails
 
 # Compare different thresholds
-node apca-wcag2-diff.mjs --wcag-threshold=3.0 --apca-threshold=30 --debug
+node apca-wcag2-diff.mjs --wcag-threshold=3.0 --apca-threshold=45 --debug
 ```
 
 ### Advanced Filtering
@@ -258,7 +253,7 @@ Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,ColorBlind_Type,
 
 ### Default Thresholds
 - **WCAG 2.x**: Contrast ratio ≥ 4.5 (AA standard, configurable: 3.0, 4.5, 7.0)
-- **APCA**: Lightness contrast (Lc) ≥ 60 (normal text, configurable: 15-90)
+- **APCA**: Lightness contrast (Lc) ≥ 60 (default, configurable: 45, 60, 75, 90)
 
 ### Filter Results
 - **`--wcag-fails`**: Shows combinations where WCAG passes but APCA fails
@@ -279,13 +274,13 @@ Foreground,Background,WCAG_Score,WCAG_Pass,APCA_Score,APCA_Pass,ColorBlind_Type,
 - Both pass: High-contrast combinations
 - Both fail: Most random combinations
 
-**Relaxed (WCAG 3.0, APCA 30):**
+**Relaxed (WCAG 3.0, APCA 45):**
 - More APCA pass + WCAG fail cases emerge
 - Useful for large text scenarios
 - Higher both-pass rates
 
 **Strict (WCAG 7.0, APCA 75):**
-- Very few both-pass combinations
+- Very few APCA-pass + WCAG fail combinations
 - Useful for AAA compliance testing
 
 ### Color Blindness Testing Results
@@ -309,7 +304,7 @@ DEBUG STATISTICS (1000 combinations tested):
 ## Dependencies
 
 - **Node.js** 18.12.1+ (ES Modules support required)
-- **APCA-W3** library for APCA contrast calculations
+- **apca-w3** library for APCA contrast calculations
 
 ## Technical Details
 
@@ -323,7 +318,8 @@ DEBUG STATISTICS (1000 combinations tested):
 **APCA (Accessible Perceptual Contrast Algorithm):**
 - Uses perceptual lightness contrast (Lc)
 - Accounts for spatial frequency, adaptation, and other visual factors
-- Configurable thresholds: 15-90 Lc based on text size and weight
+- Continuous threshold range for text content: Lc 45–90 by size, weight, and use case
+- Polarity sensitive: light text on a dark background returns a negative Lc value
 
 ### Color Range Processing
 - **Primary colors**: Emphasize single color channels (pure reds, greens, blues)
@@ -335,7 +331,7 @@ DEBUG STATISTICS (1000 combinations tested):
 ### Color Processing
 - Supports multiple hex formats (3-digit, 6-digit, with/without #)
 - Automatic normalization to 6-digit hex format
-- sRGB color space processing for APCA compatibility
+- sRGB color space processing for APCA compatibility (APCA also supports Display P3 and others)
 - Color range algorithms generate targeted RGB values within specified bounds
 
 ### Color Blindness Simulation
@@ -378,7 +374,7 @@ This tool is designed for accessibility research and education. Contributions we
 - [APCA Contrast Calculator](https://apcacontrast.com/) - Official APCA testing tool
 - [Coolors Contrast Checker](https://coolors.co/contrast-checker/) - Popular contrast testing tool
 - [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) - WCAG 2.x contrast testing
-- [Mydex Bridge](https://github.com/Myndex/bridge-pca)
+- [Myndex Bridge PCA](https://bridgepca.com/) - APCA based, backwards compatible to WCAG 2
 
 ## License
 
@@ -390,6 +386,7 @@ APCA is a new contrast algorithm being developed for WCAG 3.0 that aims to provi
 
 - [APCA Documentation](https://github.com/Myndex/SAPC-APCA)
 - [Why APCA](https://github.com/Myndex/SAPC-APCA/blob/master/documentation/WhyAPCA.md)
+- [APC-Guidelines Draft](https://readtech.org/ARC/)
 - [WCAG 3.0 Working Draft](https://www.w3.org/TR/wcag-3.0/)
 
 ## AI Disclosure

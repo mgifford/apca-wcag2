@@ -31,7 +31,7 @@
     
     <div class="controls-container">
         <div class="Messages">
-            Explore how different color combinations respond to APCA & WCAG testing. <b>Note:</b> APCA is still evolving and different models may provide different results. 
+            Explore how different color combinations respond to APCA & WCAG testing. <b>Note:</b> APCA is a public beta. This page is based on the February 2021 stable release. 
         </div>
         <div class="config-bar">
             <div class="lock-group">
@@ -90,11 +90,16 @@
             <div class="control-col">
                 <h3>APCA Threshold (Lc)</h3>
                 <select id="apca-threshold">
-                    <option value="60">Body (60)</option>
-                    <option value="75">Small body (75)</option>
-                    <option value="45">Small/Large (45)</option>
-                    <option value="30">Medium (30)</option>
-                    <option value="15">Large (15)</option>
+                    <option value="45" data-size="32" data-level="Basic">Basic Large (Lc ±45)</option>
+                    <option value="60" data-size="20" data-level="Basic" selected>Basic Medium (Lc ±60)</option>
+                    <option value="75" data-size="16" data-level="Basic">Basic Small (Lc ±75)</option>
+                    <option value="90" data-size="14" data-level="Basic">Basic Column (Lc ±90)</option>
+                    <!-- Enhanced set — set aside for the local fork; re-enable after the PR.
+                    <option value="45" data-size="42" data-level="Enhanced">Enhanced Large (Lc ±45)</option>
+                    <option value="60" data-size="24" data-level="Enhanced">Enhanced Medium (Lc ±60)</option>
+                    <option value="75" data-size="18" data-level="Enhanced">Enhanced Small (Lc ±75)</option>
+                    <option value="90" data-size="15" data-level="Enhanced">Enhanced Column (Lc ±90)</option>
+                    -->
                 </select>
             </div>
         </div>

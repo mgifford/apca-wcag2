@@ -301,18 +301,28 @@ describe('sRGBtoY', () => {
 // ---------------------------------------------------------------------------
 
 describe('getAPCAContrast', () => {
-    test('black text on white background gives a high positive Lc', () => {
-        const Yt = sRGBtoY(0, 0, 0);
-        const Yb = sRGBtoY(255, 255, 255);
-        const Lc = getAPCAContrast(Yt, Yb);
-        assert.ok(Lc > 100, `Expected Lc > 100 for black on white, got ${Lc}`);
+    test('black text on white background matches canonical Lc', () => {
+        // apcacontrast.com: black on white → Lc 106.0
+        assert.equal(getAPCAContrast(sRGBtoY(0, 0, 0), sRGBtoY(255, 255, 255)), 106);
     });
 
-    test('white text on black background gives a negative Lc (dark-on-light convention)', () => {
-        const Yt = sRGBtoY(255, 255, 255);
-        const Yb = sRGBtoY(0, 0, 0);
-        const Lc = getAPCAContrast(Yt, Yb);
-        assert.ok(Lc < -100, `Expected Lc < -100 for white on black, got ${Lc}`);
+    test('white text on black background matches canonical Lc (negative = dark-on-light)', () => {
+        // apcacontrast.com: white on black → Lc -107.9
+        assert.equal(getAPCAContrast(sRGBtoY(255, 255, 255), sRGBtoY(0, 0, 0)), -107.9);
+    });
+
+    test('mid-range pair (neither pure black nor white) matches canonical Lc to one decimal', () => {
+        // Mid-range pairs expose constant/offset errors that pure black-on-white can hide.
+        // apcacontrast.com references:
+        assert.equal(getAPCAContrast(sRGBtoY(17, 17, 17), sRGBtoY(160, 160, 160)), 52.3);  // #111 on #a0a0a0
+        assert.equal(getAPCAContrast(sRGBtoY(160, 160, 160), sRGBtoY(17, 17, 17)), -50.4); // #a0a0a0 on #111
+    });
+
+    test('mid-range grays on white match canonical Lc (spot-checked vs apcacontrast.com)', () => {
+        const Yb = sRGBtoY(255, 255, 255);
+        assert.equal(getAPCAContrast(sRGBtoY(85, 85, 85),    Yb), 85.9); // #555 on white
+        assert.equal(getAPCAContrast(sRGBtoY(102, 102, 102), Yb), 78.8); // #666 on white
+        assert.equal(getAPCAContrast(sRGBtoY(136, 136, 136), Yb), 63.1); // #888 on white
     });
 
     test('same color returns 0', () => {
@@ -421,10 +431,14 @@ describe('calculateResult', () => {
         assert.ok(/^\d+\.\d{2}$/.test(result.wcagRatio), `wcagRatio format wrong: ${result.wcagRatio}`);
     });
 
-    test('apcaScore is a non-negative string with 1 decimal place', () => {
-        const result = calculateResult('#000000', '#ffffff', 4.5, 60);
-        assert.ok(/^\d+\.\d$/.test(result.apcaScore), `apcaScore format wrong: ${result.apcaScore}`);
-        assert.ok(parseFloat(result.apcaScore) >= 0);
+    test('apcaScore is a signed string with 1 decimal place (polarity preserved)', () => {
+        // Dark-on-light → positive Lc; light-on-dark → negative Lc.
+        const darkOnLight = calculateResult('#000000', '#ffffff', 4.5, 60);
+        assert.ok(/^-?\d+\.\d$/.test(darkOnLight.apcaScore), `apcaScore format wrong: ${darkOnLight.apcaScore}`);
+        assert.ok(parseFloat(darkOnLight.apcaScore) > 0, 'dark-on-light Lc should be positive');
+
+        const lightOnDark = calculateResult('#ffffff', '#000000', 4.5, 60);
+        assert.ok(parseFloat(lightOnDark.apcaScore) < 0, 'light-on-dark Lc should be negative');
     });
 
     test('fgRange corresponds to the foreground color', () => {
@@ -433,15 +447,21 @@ describe('calculateResult', () => {
     });
 
     test('wcag_pass_apca_fail disagreement type is correctly set', () => {
-        // #666 on white: WCAG ≈ 5.74 (pass at 4.5) but APCA Lc ≈ 54 (fail at 60)
-        const result = calculateResult('#666666', '#ffffff', 4.5, 60);
-        if (result.wcagPass && !result.apcaPass) {
-            assert.equal(result.disagreementType, 'wcag_pass_apca_fail');
-        }
-        // If the specific values changed, at least check the type mapping is consistent
-        if (result.wcagPass && result.apcaPass) assert.equal(result.disagreementType, 'both_pass');
-        if (!result.wcagPass && !result.apcaPass) assert.equal(result.disagreementType, 'both_fail');
-        if (!result.wcagPass && result.apcaPass) assert.equal(result.disagreementType, 'apca_pass_wcag_fail');
+        // #010e03 on #7b7a67 (a dark pair): WCAG 4.52 (pass at 4.5) but APCA Lc 34 (fail at 60).
+        // APCA flags low contrast that WCAG's +0.05 flare term inflates past the 4.5 ratio.
+        const result = calculateResult('#010e03', '#7b7a67', 4.5, 60);
+        assert.equal(result.wcagPass, true);
+        assert.equal(result.apcaPass, false);
+        assert.equal(result.disagreementType, 'wcag_pass_apca_fail');
+    });
+
+    test('apca_pass_wcag_fail disagreement type is correctly set', () => {
+        // #888888 on white: WCAG 3.54 (fail at 4.5) but APCA Lc 63 (pass at 60).
+        // APCA is more permissive than WCAG for dark text on light/saturated backgrounds.
+        const result = calculateResult('#888888', '#ffffff', 4.5, 60);
+        assert.equal(result.wcagPass, false);
+        assert.equal(result.apcaPass, true);
+        assert.equal(result.disagreementType, 'apca_pass_wcag_fail');
     });
 
     test('string threshold values are parsed correctly', () => {

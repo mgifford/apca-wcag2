@@ -139,14 +139,24 @@ h1, h2 {
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
-.sample-text {
-    font-size: 48px;
-    font-weight: bold;
-    text-align: center;
-    line-height: 1.5;
+/* One full-width color field per card holding both algorithm samples.
+   Each sample's font size is set inline per card from its own threshold. */
+.sample-patch {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 10px;
     margin-bottom: 15px;
-    border-radius: 6px;
+    padding: 10px 6px;
+    border-radius: 4px;
     border: 1px solid rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.sample-algo {
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .details p {
